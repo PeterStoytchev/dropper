@@ -33,8 +33,8 @@ void reciver_entrypoint(const char* dir)
         char placeholder = 'Y';
         printf("debug: assuming yes\n");
 
-        enum file_transfer_response resp;
-        if (placeholder == "Y")
+        enum transfer_response resp;
+        if (placeholder == 'Y')
         {
             printf("sending yes\n");
             resp = OK;
@@ -53,7 +53,11 @@ void reciver_entrypoint(const char* dir)
         }
         else if (resp == OK)
         {
-            printf("Rread file and write to disk\n");
+            FILE* f = fopen(tr.file_name, "wb");
+            ReciveFileInChuncks(f, sender_socket);
+            fclose(f);
+
+            printf("File received\n");
         }
         else
         {
@@ -75,15 +79,24 @@ void sender_entrypoint(const char* dir)
     */
     
     psocket_t sending_socket = OpenSocketAtDestination("127.0.0.1");
-    
-    const char* text = "12345678910";
 
-    WriteToSocket(sending_socket, 12, text);
+    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", "test.txt");
+    WriteToSocket(sending_socket, sizeof(tr), &tr);
+
+    enum transfer_response fr;
+    ReadFromSocket(sending_socket, sizeof(fr), &fr);
+
+    if (fr == NOT_OK)
+    {
+        printf("Remote user declied your request!\n");
+        CloseSocket(sending_socket);
+        
+        return;
+    }
+
+    printf("Read file and send!\n");
 
     CloseSocket(sending_socket);
-
-    printf("If no, exit!\n");
-    printf("If yes, read the file and send it\n");
 }
 
 int main(int argc, char* argv[])

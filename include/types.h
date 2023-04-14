@@ -15,3 +15,8 @@ typedef uint64_t u64;
 
 typedef float f32;
 typedef double f64;
+
+
+#define KB(x) x * 1024
+#define MB(x) KB(x) * 1024
+#define GB(x) MB(x) * 1024

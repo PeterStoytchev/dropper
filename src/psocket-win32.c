@@ -76,7 +76,7 @@ void CloseSocket(psocket_t socket)
     closesocket(socket);
 }
 
-void ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
+s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
 {
     s32 bytes_recived = 0;
 
@@ -88,18 +88,22 @@ void ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
         {
             bytes_recived += iResult;
             printf("Bytes received: %d\n", iResult);
+
+            return 1;
         }
         else if (iResult == 0)
         {
             printf("Connection closed\n");
-            return;
+            return -1;
         }
         else
         {
             printf("recv failed with error: %d\n", WSAGetLastError());
-            return;
+            return -1;
         }
     }
+
+    return 1;
 }
 
 void WriteToSocket(psocket_t socket, s32 size, void* src_memory)

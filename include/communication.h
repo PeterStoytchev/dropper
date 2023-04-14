@@ -38,5 +38,6 @@ struct data_chunck
 };
 
 void ReciveFileInChuncks(FILE* file, psocket_t socket);
+void SendFileInChuncks(FILE* file, psocket_t socket);
 
 #pragma pack(pop)

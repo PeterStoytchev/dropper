@@ -94,7 +94,9 @@ void sender_entrypoint(const char* dir)
         return;
     }
 
-    printf("Read file and send!\n");
+    FILE* f = fopen("test_read.txt", "rb");
+
+    SendFileInChuncks(f, sending_socket);
 
     CloseSocket(sending_socket);
 }

@@ -23,7 +23,6 @@ void reciver_entrypoint(const char* dir)
         printf("mem: %s\n", mem);
 
         CloseSocket(sender_socket);
-        CloseSocket(server_socket);
 
         printf("Read file request.\n");
         printf("Prompt user to accept\n");
@@ -40,22 +39,21 @@ void sender_entrypoint(const char* dir)
 {
     printf("sender mode\n");
 
+    /*
     printf("do a network broadcast, to detect potential recicvers\n");
     printf("Print user for selection or s for skip and exit\n");
     
     printf("if negative answer, exit!\n");
     printf("If target selected, request transfer to it.\n");
+    */
     
-    psocket_t sending_socket = OpenSocketAtDestination("10.0.0.136");
+    psocket_t sending_socket = OpenSocketAtDestination("127.0.0.1");
     
     const char* text = "12345678910";
-    char payload[32];
-    memset(payload, 0, sizeof(payload));
-    strcpy(payload, text);
 
-    WriteToSocket(sending_socket, sizeof(payload), payload);
+    WriteToSocket(sending_socket, 12, text);
 
-    CloseSocket(sending_socket);    
+    CloseSocket(sending_socket);
 
     printf("If no, exit!\n");
     printf("If yes, read the file and send it\n");

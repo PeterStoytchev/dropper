@@ -3,6 +3,8 @@
 
 #include "psocket.h"
 
+#include "communication.h"
+
 void reciver_entrypoint(const char* dir)
 {
     printf("reciver mode\n");
@@ -15,23 +17,48 @@ void reciver_entrypoint(const char* dir)
 
         psocket_t sender_socket = AcceptSocket(server_socket);
 
-        char mem[32];
-        memset(mem, 0, sizeof(mem));
-
-        printf("reading...\n");
-        ReadFromSocket(sender_socket, sizeof(mem), mem);
-        printf("mem: %s\n", mem);
-
-        CloseSocket(sender_socket);
-
         printf("Read file request.\n");
-        printf("Prompt user to accept\n");
 
-        printf("Prompt user to accept\n");
+        struct file_transfer_request tr;
+        memset(&tr, 0, sizeof(tr));
 
-        printf("If yes, read file and write to disk\n");
+        ReadFromSocket(sender_socket, sizeof(tr), &tr);
 
-        printf("if no, continue\n");
+        printf("sender_name: %s\n", tr.sender_name);
+        printf("sender_address: %s\n", tr.sender_address);
+        printf("file_name: %s\n", tr.file_name);
+
+        printf("Do you want to recieve this file? (Y/N)\n");
+
+        char placeholder = 'Y';
+        printf("debug: assuming yes\n");
+
+        enum file_transfer_response resp;
+        if (placeholder == "Y")
+        {
+            printf("sending yes\n");
+            resp = OK;
+        }
+        else 
+        {
+            resp = NOT_OK;
+        }
+
+        //Send our response
+        WriteToSocket(sender_socket, sizeof(resp), &resp);
+        if (resp == NOT_OK)
+        {
+            CloseSocket(sender_socket);
+            return;
+        }
+        else if (resp == OK)
+        {
+            printf("Rread file and write to disk\n");
+        }
+        else
+        {
+            printf("fuck!\n");
+        }
     }    
 }
 

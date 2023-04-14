@@ -1,5 +1,7 @@
 #include "psocket.h"
 
+#include <stdio.h>
+
 // A lot of copy-pasta from: https://learn.microsoft.com/en-us/windows/win32/winsock/complete-server-code
 // and: https://learn.microsoft.com/en-us/windows/win32/winsock/complete-client-code
 
@@ -49,7 +51,7 @@ psocket_t OpenSocketAtDestination(const char* dst)
     hints.ai_protocol = IPPROTO_TCP;
 
     struct addrinfo* result = NULL;
-    s32 iResult = getaddrinfo(dst, NETWORK_PORT, &hints, &result);
+    getaddrinfo(dst, NETWORK_PORT, &hints, &result);
 
     SOCKET ConnectSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
 
@@ -77,18 +79,17 @@ void CloseSocket(psocket_t socket)
 void ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
 {
     s32 bytes_recived = 0;
-    s32 iResult = -1;
 
     while (bytes_recived != size)
     {
-        s32 iResult = recv(socket, (u8*)dst_memory + bytes_recived, size - bytes_recived, 0);
+        s32 iResult = recv(socket, (char*)dst_memory + bytes_recived, size - bytes_recived, 0);
 
-        if ( iResult > 0 )
+        if (iResult > 0 )
         {
-            printf("Bytes received: %d\n", iResult);
             bytes_recived += iResult;
+            printf("Bytes received: %d\n", iResult);
         }
-        else if ( iResult == 0 )
+        else if (iResult == 0)
         {
             printf("Connection closed\n");
             return;

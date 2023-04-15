@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include "psocket.h"
-
 #include "communication.h"
+#include "pstring.h"
 
 void reciver_entrypoint(const char* dir)
 {
@@ -86,7 +86,14 @@ void sender_entrypoint(const char* dir)
 
     FILE* f = fopen(dir, "rb");
 
-    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", dir);
+    const char* file_name = GetLastSection(dir, strlen(dir), '\\');
+    if (file_name == NULL)
+    {
+        printf("Got null\n");
+        file_name = dir;
+    }
+
+    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", file_name);
     tr.file_size = UtilGetFileSize(f);
 
     WriteToSocket(sending_socket, sizeof(tr), &tr);

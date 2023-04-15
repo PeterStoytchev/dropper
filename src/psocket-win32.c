@@ -98,7 +98,7 @@ s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
         }
         else
         {
-            //printf("recv failed with error: %d\n", WSAGetLastError());
+            printf("recv failed with error: %d\n", WSAGetLastError());
             return -1;
         }
     }

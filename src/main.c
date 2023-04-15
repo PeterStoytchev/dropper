@@ -27,16 +27,18 @@ void reciver_entrypoint(const char* dir)
         printf("sender_name: %s\n", tr.sender_name);
         printf("sender_address: %s\n", tr.sender_address);
         printf("file_name: %s\n", tr.file_name);
+        printf("file_size: %llu\n", tr.file_size);
 
         printf("Do you want to recieve this file? (Y/N)\n");
 
-        char placeholder = 'Y';
-        printf("debug: assuming yes\n");
+        //Read answer to promt
+        char c;
+        scanf(" %c", &c);
 
+        //Set the correct response
         enum transfer_response resp;
-        if (placeholder == 'Y')
+        if (c == 'Y')
         {
-            printf("sending yes\n");
             resp = OK;
         }
         else 
@@ -44,24 +46,26 @@ void reciver_entrypoint(const char* dir)
             resp = NOT_OK;
         }
 
-        //Send our response
+        //Send the response
         WriteToSocket(sender_socket, sizeof(resp), &resp);
+
+        //If we sent a no, we exit
         if (resp == NOT_OK)
         {
+            printf("File transfer declined!\n");
+
             CloseSocket(sender_socket);
             return;
         }
-        else if (resp == OK)
+        else if (resp == OK) //If we sent a yes, we read the file in chuncks
         {
+            printf("File transfer accepted!\n");
+
             FILE* f = fopen(tr.file_name, "wb");
             ReciveFileInChuncks(f, sender_socket);
             fclose(f);
 
             printf("File received\n");
-        }
-        else
-        {
-            printf("fuck!\n");
         }
     }    
 }
@@ -80,8 +84,14 @@ void sender_entrypoint(const char* dir)
     
     psocket_t sending_socket = OpenSocketAtDestination("127.0.0.1");
 
-    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", "test.txt");
+    FILE* f = fopen(dir, "rb");
+
+    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", dir);
+    tr.file_size = UtilGetFileSize(f);
+
     WriteToSocket(sending_socket, sizeof(tr), &tr);
+
+    printf("Sent file transfer request!\n");
 
     enum transfer_response fr;
     ReadFromSocket(sending_socket, sizeof(fr), &fr);
@@ -89,28 +99,19 @@ void sender_entrypoint(const char* dir)
     if (fr == NOT_OK)
     {
         printf("Remote user declied your request!\n");
-        CloseSocket(sending_socket);
-        
-        return;
+    }
+    else if (fr == OK)
+    {
+        printf("Remote user accepted your request!\nSending file!\n");
+        SendFileInChuncks(f, sending_socket);
     }
 
-    FILE* f = fopen("test_read.txt", "rb");
-
-    SendFileInChuncks(f, sending_socket);
-
+    fclose(f);
     CloseSocket(sending_socket);
 }
 
 int main(int argc, char* argv[])
 {
-    /*
-    if (argc < 3)
-    {
-        printf("Not enough arguments!");
-        return 0;
-    }
-    */
-
     if (strcmp(argv[1], "s") == 0)
     {
         sender_entrypoint(argv[2]);

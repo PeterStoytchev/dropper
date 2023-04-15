@@ -40,4 +40,7 @@ struct data_chunck
 void ReciveFileInChuncks(FILE* file, psocket_t socket);
 void SendFileInChuncks(FILE* file, psocket_t socket);
 
+//TODO: This is a utility function, and should really move somewhere else
+s64 UtilGetFileSize(FILE* f);
+
 #pragma pack(pop)

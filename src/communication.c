@@ -15,6 +15,17 @@ struct file_transfer_request CreateRequestFromConstants(const char* sender_name,
     return tr;
 }
 
+struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4)
+{
+    struct network_discovery_request req;
+    
+    strcpy(req.name, name);
+    strcpy(req.ipv4, ipv4);
+
+    return req;
+}
+
+
 void ReciveFileInChuncks(FILE* file, psocket_t socket)
 {
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));

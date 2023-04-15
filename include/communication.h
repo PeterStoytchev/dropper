@@ -40,6 +40,14 @@ struct data_chunck
 void ReciveFileInChuncks(FILE* file, psocket_t socket);
 void SendFileInChuncks(FILE* file, psocket_t socket);
 
+struct network_discovery_request
+{
+    char name[32];
+    char ipv4[3*4];
+};
+
+struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4);
+
 //TODO: This is a utility function, and should really move somewhere else
 s64 UtilGetFileSize(FILE* f);
 

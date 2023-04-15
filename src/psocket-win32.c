@@ -61,6 +61,64 @@ psocket_t OpenSocketAtDestination(const char* dst)
     return ConnectSocket;
 }
 
+psocket_t OpenSocketUDPServer()
+{
+    StartWSA();
+
+    struct addrinfo *result = NULL;
+
+    //Not very flexible, but this abstraction layer is just for this app
+    //To be changed if needed
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    // iResult the server address and port
+    s32 iResult = getaddrinfo(NULL, NETWORK_PORT_BROADCAST, &hints, &result);
+
+    // Create a SOCKET for the server to listen for client connections.
+    SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+
+    //Bind the socket
+    iResult = bind(ListenSocket, result->ai_addr, (s32)result->ai_addrlen);
+
+    freeaddrinfo(result);
+
+    return ListenSocket;
+}
+
+psocket_t OpenSocketBroadcast()
+{
+    StartWSA();
+
+    struct addrinfo *result = NULL;
+
+    //Not very flexible, but this abstraction layer is just for this app
+    //To be changed if needed
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+    hints.ai_flags = AI_PASSIVE;
+
+    // iResult the server address and port
+    s32 iResult = getaddrinfo(NULL, NETWORK_PORT_BROADCAST, &hints, &result);
+
+    // Create a SOCKET for the server to listen for client connections.
+    SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+
+    int iOptVal = 1;
+    setsockopt(ListenSocket, SOL_SOCKET, SO_BROADCAST, &iOptVal, sizeof(int));
+
+    freeaddrinfo(result);
+
+    return ListenSocket;
+}
+
+
 void ListenSocket(psocket_t socket)
 {
     listen(socket, SOMAXCONN);
@@ -106,9 +164,59 @@ s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
     return 1;
 }
 
+s8 ReadFromBroadcast(psocket_t socket, s32 size, void* dst_memory)
+{
+    s32 bytes_recived = 0;
+
+    struct sockaddr_storage their_addr;
+    s32 addr_len = sizeof(their_addr);
+
+    while (bytes_recived != size)
+    {
+        s32 iResult = recvfrom(socket, (char*)dst_memory + bytes_recived, size - bytes_recived, 0, (struct sockaddr *)&their_addr, &addr_len);
+
+        if (iResult > 0 )
+        {
+            bytes_recived += iResult;
+            printf("Bytes received: %d\n", iResult);
+
+            return 1;
+        }
+        else if (iResult == 0)
+        {
+            printf("Connection closed\n");
+            return -1;
+        }
+        else
+        {
+            printf("recv failed with error: %d\n", WSAGetLastError());
+            return -1;
+        }
+    }
+
+    return 1;
+}
+
+
 void WriteToSocket(psocket_t socket, s32 size, void* src_memory)
 {
     s32 iSendResult = send(socket, src_memory, size, 0);
+
+    if (iSendResult == SOCKET_ERROR) {
+        printf("send failed with error: %d\n", WSAGetLastError());
+        return;
+    }
+    printf("Bytes sent: %d\n", iSendResult);
+}
+
+void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory)
+{
+    struct sockaddr_in to;
+    to.sin_family = AF_INET;
+    to.sin_port = 13338;
+    to.sin_addr.s_addr = inet_addr("255.255.255.255");
+
+    s32 iSendResult = sendto(socket, src_memory, size, 0, (SOCKADDR*)&to, sizeof(to));
 
     if (iSendResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());

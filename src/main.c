@@ -9,13 +9,18 @@ void reciver_entrypoint(const char* dir)
 {
     printf("reciver mode\n");
 
-    //for (;;)
-    {
-        printf("Open socket and wait for connection.\n");
-        psocket_t server_socket = OpenSocket();
-        ListenSocket(server_socket);
+    psocket_t broadcast_reply_socket = OpenSocketUDPServer();
+    struct network_discovery_request req;
 
-        psocket_t sender_socket = AcceptSocket(server_socket);
+    printf("stuck on reading...\n");
+    ReadFromBroadcast(broadcast_reply_socket, sizeof(req), &req);
+
+    CloseSocket(broadcast_reply_socket);
+
+    printf("got a broadcast, calling back to %s\n", req.ipv4);
+
+    {
+        psocket_t sender_socket = OpenSocketAtDestination(req.ipv4);
 
         printf("Read file request.\n");
 
@@ -74,15 +79,23 @@ void sender_entrypoint(const char* dir)
 {
     printf("sender mode\n");
 
-    /*
-    printf("do a network broadcast, to detect potential recicvers\n");
-    printf("Print user for selection or s for skip and exit\n");
+    // Do network broadcast, notifying recivers of our IP
+    // after that, they should connect to us
+    psocket_t broadcast_socket = OpenSocketBroadcast();
     
-    printf("if negative answer, exit!\n");
-    printf("If target selected, request transfer to it.\n");
-    */
+    //hardcore the vals for now
+    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromConstants("desktop", "10.0.0.136");
+
+    WriteToBroadcast(broadcast_socket, sizeof(req), &req);
+    CloseSocket(broadcast_socket);
+
+    printf("broadcast sent, listeing for callbacks!\n");
+    psocket_t server_socket = OpenSocket();
+    ListenSocket(server_socket);
     
-    psocket_t sending_socket = OpenSocketAtDestination("127.0.0.1");
+    // For now, just accept the first one to connect back
+    // Later, this will run for some time, before we present the user with a list
+    psocket_t sending_socket = AcceptSocket(server_socket);
 
     FILE* f = fopen(dir, "rb");
 

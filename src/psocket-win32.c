@@ -76,7 +76,7 @@ psocket_t OpenSocketUDPServer()
     hints.ai_flags = AI_PASSIVE;
 
     // iResult the server address and port
-    s32 iResult = getaddrinfo(NULL, NETWORK_PORT_BROADCAST, &hints, &result);
+    s32 iResult = getaddrinfo(NULL, "6708", &hints, &result);
 
     // Create a SOCKET for the server to listen for client connections.
     SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);

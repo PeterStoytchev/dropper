@@ -54,13 +54,21 @@ void reciver_entrypoint(const char* dir)
         {
             USER_LOG("File transfer accepted!\n");
 
-            const char* final_path = ConcatenatePath(dir, tr.file_name);
+            FILE* f;
+            if (dir != NULL)
+            {
+                const char* final_path = ConcatenatePath(dir, tr.file_name);
+                f = fopen(final_path, "wb");
+                free((void*)final_path);
+            }
+            else
+            {
+                f = fopen(tr.file_name, "wb");
+            }
 
-            FILE* f = fopen(final_path, "wb");
             ReciveFileInChuncks(f, tr.file_size, sender_socket);
             fclose(f);
 
-            free((void*)final_path);
 
             USER_LOG("File received\n");
         }

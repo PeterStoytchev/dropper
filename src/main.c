@@ -8,6 +8,9 @@
 #include "communication.h"
 #include "pstring.h"
 
+
+//TODO: Broadcast on all interfaces, so that PCs with multiple NICs can actually use this...
+
 void reciver_entrypoint(const char* dir)
 {
     DEBUG_LOG("Reciver mode\n");

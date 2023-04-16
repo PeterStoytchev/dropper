@@ -15,13 +15,11 @@
 
 struct file_transfer_request
 {
-    char sender_name[32];
-    char sender_address[3 * 4]; //IPv4 of format xxx.xxx.xxx.xxx
     char file_name[64];
     u64 file_size;
 };
 
-struct file_transfer_request CreateRequestFromConstants(const char* sender_name, const char* sender_address, const char* file_name);
+struct file_transfer_request CreateFileTransferRequest(const char* file_name, FILE* f);
 
 enum {
     NONE,
@@ -45,9 +43,10 @@ void ReciveFileInChuncks(FILE* file, psocket_t socket);
 struct network_discovery_request
 {
     char name[32];
-    char ipv4[3*4];
+    char ipv4[3*4]; //IPv4 of format xxx.xxx.xxx.xxx
 };
 
+struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv();
 struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4);
 
 #pragma pack(pop)

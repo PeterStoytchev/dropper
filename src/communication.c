@@ -4,14 +4,13 @@
 #include <string.h>
 #include <stdlib.h>
 
-struct file_transfer_request CreateRequestFromConstants(const char* sender_name, const char* sender_address, const char* file_name)
+struct file_transfer_request CreateFileTransferRequest(const char* file_name, FILE* f)
 {
     struct file_transfer_request tr;
     memset(&tr, 0, sizeof(tr));
 
-    strcpy(tr.sender_name, sender_name);
-    strcpy(tr.sender_address, sender_address);
     strcpy(tr.file_name, file_name);
+    tr.file_size = UtilGetFileSize(f);
 
     return tr;
 }
@@ -25,6 +24,22 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(cons
 
     return req;
 }
+
+struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv()
+{
+    // Get the PC's hostname
+    char host[256];
+    memset(host, 0, sizeof(host));
+    gethostname(host, sizeof(host));
+
+    // Get the PC's IP
+    struct hostent *host_entry = gethostbyname(host);
+    char *IP = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
+
+    // This shouldn't cause memory issues, since we call the next function, before we return
+    return CreateNetworkDiscoveryRequestFromConstants(host, IP);
+}
+
 
 enum transfer_response GetTransferResponseFromUser()
 {

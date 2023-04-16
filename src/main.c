@@ -31,8 +31,8 @@ void reciver_entrypoint(const char* dir)
 
         USER_LOG("Got a file request!\n");
 
-        USER_LOG("Sender Name: %s\n", tr.sender_name);
-        USER_LOG("Sender Address: %s\n", tr.sender_address);
+        USER_LOG("Sender Name: %s\n", req.name);
+        USER_LOG("Sender Address: %s\n", req.ipv4);
         USER_LOG("File Name: %s\n", tr.file_name);
         USER_LOG("File Size: %f\n", (f32)tr.file_size / 1024 / 1024);
 
@@ -82,8 +82,7 @@ void sender_entrypoint(const char* dir)
 
     psocket_t broadcast_socket = OpenSocketBroadcast();
     
-    //hardcode the vals for now
-    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromConstants("desktop", "10.0.0.136");
+    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromEnv();
 
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us
@@ -103,9 +102,7 @@ void sender_entrypoint(const char* dir)
 
     FILE* f = fopen(dir, "rb");
 
-    struct file_transfer_request tr = CreateRequestFromConstants("Ivan", "10.0.0.136", file_name);
-    tr.file_size = UtilGetFileSize(f);
-
+    struct file_transfer_request tr = CreateFileTransferRequest(file_name, f);
     WriteToSocket(sending_socket, sizeof(tr), &tr);
 
     USER_LOG("Sent file transfer request!\n");

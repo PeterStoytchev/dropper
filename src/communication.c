@@ -1,8 +1,10 @@
 #include "log.h"
+#include "utils.h"
 #include "communication.h"
 
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 struct file_transfer_request CreateFileTransferRequest(const char* file_name, FILE* f)
 {
@@ -50,7 +52,6 @@ enum transfer_response GetTransferResponseFromUser()
     scanf(" %c", &c);
     
     //Set the correct response
-    enum transfer_response resp;
     if (c == 'Y')
     {
         return OK;
@@ -59,14 +60,19 @@ enum transfer_response GetTransferResponseFromUser()
     return NOT_OK;
 }
 
-void ReciveFileInChuncks(FILE* file, psocket_t socket)
+void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
 {
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
+
+    u64 chunck_counter = 0;
+    u64 total_chuncks = (u64)ceilf((f32)total_file_size / (f32)DATA_CHUNCK_SIZE);
 
     do
     {
         ReadFromSocket(socket, sizeof(struct data_chunck), chunck);
         fwrite(chunck->data, chunck->data_chunk_usage, 1, file);
+
+        USER_LOG("Progress %llu/%llu\n", ++chunck_counter, total_chuncks);
     }
     while (chunck->next_info != END);
 
@@ -80,14 +86,18 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
     chunck->next_info = OK;
 
+    u64 chunck_counter = 0;
+    u64 total_chuncks = (u64)ceilf((f32)UtilGetFileSize(file) / (f32)DATA_CHUNCK_SIZE);
     do
     {
-        chunck->data_chunk_usage = fread(chunck->data, 1, DATA_CHUNCK_SIZE, file);
+        chunck->data_chunk_usage = (u16)fread(chunck->data, 1, DATA_CHUNCK_SIZE, file);
         
         if (chunck->data_chunk_usage != DATA_CHUNCK_SIZE)
             chunck->next_info = END;
 
         WriteToSocket(socket, sizeof(struct data_chunck), chunck);
+
+        USER_LOG("Progress %llu/%llu\n", ++chunck_counter, total_chuncks);
     }
     while (chunck->next_info != END);
 

@@ -38,7 +38,7 @@ struct data_chunck
 };
 
 void SendFileInChuncks(FILE* file, psocket_t socket);
-void ReciveFileInChuncks(FILE* file, psocket_t socket);
+void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket);
 
 struct network_discovery_request
 {

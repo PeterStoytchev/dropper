@@ -39,6 +39,6 @@ void ListenSocket(psocket_t socket);
 psocket_t AcceptSocket(psocket_t server_socket);
 
 void WriteToSocket(psocket_t socket, s32 size, void* src_memory);
-void WritToBroadcast(psocket_t socket, s32 size, void* src_memory);
+void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory);
 s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory);
 s8 ReadFromBroadcast(psocket_t socket, s32 size, void* dst_memory);

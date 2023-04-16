@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "log.h"
@@ -34,9 +35,9 @@ void reciver_entrypoint(const char* dir)
         USER_LOG("Sender Name: %s\n", req.name);
         USER_LOG("Sender Address: %s\n", req.ipv4);
         USER_LOG("File Name: %s\n", tr.file_name);
-        USER_LOG("File Size: %f\n", (f32)tr.file_size / 1024 / 1024);
+        USER_LOG("File Size: %f\n", (f32)tr.file_size / (f32)1024 / (f32)1024);
 
-        // The function called will promt the user and read their input
+        // The function called will prompt the user and read their input
         enum transfer_response resp = GetTransferResponseFromUser();
 
         //Send the response
@@ -48,15 +49,18 @@ void reciver_entrypoint(const char* dir)
             USER_LOG("File transfer declined!\n");
 
             CloseSocket(sender_socket);
-            return;
         }
         else if (resp == OK) //If we sent a yes, we read the file in chuncks
         {
             USER_LOG("File transfer accepted!\n");
 
-            FILE* f = fopen(tr.file_name, "wb");
-            ReciveFileInChuncks(f, sender_socket);
+            const char* final_path = ConcatenatePath(dir, tr.file_name);
+
+            FILE* f = fopen(final_path, "wb");
+            ReciveFileInChuncks(f, tr.file_size, sender_socket);
             fclose(f);
+
+            free((void*)final_path);
 
             USER_LOG("File received\n");
         }
@@ -73,12 +77,12 @@ void sender_entrypoint(const char* dir)
         DEBUG_LOG("Couldn't extract the file name, ERROR AND EXIT!\n");
         USER_LOG("Invalid path provided!\n");
 
-        free(file_name);
+        free((void*)file_name);
 
         return;
     }
 
-    free(file_name);
+    free((void*)file_name);
 
     psocket_t broadcast_socket = OpenSocketBroadcast();
     
@@ -126,8 +130,18 @@ void sender_entrypoint(const char* dir)
 
 int main(int argc, char* argv[])
 {
+    if (argc < 2)
+    {
+soSueMe:
+        USER_LOG("Not enough arugments provided!\n");
+        return;
+    }
+
     if (strcmp(argv[1], "s") == 0)
     {
+        if (argc < 3)
+            goto soSueMe;
+        
         sender_entrypoint(argv[2]);
     }
     else if (strcmp(argv[1], "r") == 0)

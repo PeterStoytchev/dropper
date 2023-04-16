@@ -3,7 +3,7 @@ mkdir build
 cd build
 
 set srcprefix=..\src\
-set compiler_flags=/Zi /W4 /Od /D_CRT_SECURE_NO_WARNINGS /Qvec-report:1 /std:c++17 /EHsc /FAs
+set compiler_flags=/Zi /W4 /Od /D_CRT_SECURE_NO_WARNINGS /Qvec-report:1 /FAs
 set include_dir=/I ..\include\
 set files_to_compile=%srcprefix%main.c %srcprefix%psocket-win32.c %srcprefix%communication.c %srcprefix%pstring.c %srcprefix%utils.c
 set executable_name=dropper-win32-debug.exe

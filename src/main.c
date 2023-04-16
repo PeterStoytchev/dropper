@@ -6,8 +6,6 @@
 #include "utils.h"
 #include "psocket.h"
 #include "communication.h"
-#include "pstring.h"
-
 
 //TODO: Broadcast on all interfaces, so that PCs with multiple NICs can actually use this...
 

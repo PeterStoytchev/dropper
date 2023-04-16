@@ -60,19 +60,26 @@ enum transfer_response GetTransferResponseFromUser()
     return NOT_OK;
 }
 
+// Stolen from: https://stackoverflow.com/a/2422723
+// May be moved later to the utils file
+u32 RoundClosestUp(u32 dividend, u32 divisor)
+{
+    return (dividend + (divisor / 2)) / divisor;
+}
+
 void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
 {
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
 
-    u64 chunck_counter = 0;
-    u64 total_chuncks = (u64)ceilf((f32)total_file_size / (f32)DATA_CHUNCK_SIZE);
+    u32 chunck_counter = 0;
+    u32 total_chuncks = RoundClosestUp((u32)UtilGetFileSize(file), DATA_CHUNCK_SIZE);
 
     do
     {
         ReadFromSocket(socket, sizeof(struct data_chunck), chunck);
         fwrite(chunck->data, chunck->data_chunk_usage, 1, file);
 
-        USER_LOG("Progress %llu/%llu\n", ++chunck_counter, total_chuncks);
+        USER_LOG("Progress %lu/%lu\n", ++chunck_counter, total_chuncks);
     }
     while (chunck->next_info != END);
 
@@ -86,8 +93,9 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
     chunck->next_info = OK;
 
-    u64 chunck_counter = 0;
-    u64 total_chuncks = (u64)ceilf((f32)UtilGetFileSize(file) / (f32)DATA_CHUNCK_SIZE);
+    u32 chunck_counter = 0;
+    u32 total_chuncks = RoundClosestUp((u32)UtilGetFileSize(file), DATA_CHUNCK_SIZE);
+
     do
     {
         chunck->data_chunk_usage = (u16)fread(chunck->data, 1, DATA_CHUNCK_SIZE, file);
@@ -97,7 +105,7 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
 
         WriteToSocket(socket, sizeof(struct data_chunck), chunck);
 
-        USER_LOG("Progress %llu/%llu\n", ++chunck_counter, total_chuncks);
+        USER_LOG("Progress %lu/%lu\n", ++chunck_counter, total_chuncks);
     }
     while (chunck->next_info != END);
 

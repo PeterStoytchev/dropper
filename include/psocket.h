@@ -2,6 +2,7 @@
 
 #include "types.h"
 
+// This is temporary
 #define OS_WINDOWS
 
 #ifdef OS_WINDOWS
@@ -22,6 +23,7 @@ typedef SOCKET psocket_t;
 typedef s32 psocket_t;
 
 #define NETWORK_PORT 13337
+#define NETWORK_PORT_BROADCAST 13338
 
 #endif
 

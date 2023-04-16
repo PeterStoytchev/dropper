@@ -1,4 +1,5 @@
 #include "psocket.h"
+#include "log.h"
 
 #include <stdio.h>
 
@@ -136,18 +137,18 @@ s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory)
         if (iResult > 0 )
         {
             bytes_recived += iResult;
-            printf("Bytes received: %d\n", iResult);
+            VERBOSE_LOG("Bytes received: %d\n", iResult);
 
             return 1;
         }
         else if (iResult == 0)
         {
-            printf("Connection closed\n");
+            VERBOSE_LOG("Connection closed\n");
             return -1;
         }
         else
         {
-            printf("recv failed with error: %d\n", WSAGetLastError());
+            VERBOSE_LOG("recv failed with error: %d\n", WSAGetLastError());
             return -1;
         }
     }
@@ -169,18 +170,18 @@ s8 ReadFromBroadcast(psocket_t socket, s32 size, void* dst_memory)
         if (iResult > 0 )
         {
             bytes_recived += iResult;
-            printf("Bytes received: %d\n", iResult);
+            VERBOSE_LOG("Bytes received: %d\n", iResult);
 
             return 1;
         }
         else if (iResult == 0)
         {
-            printf("Connection closed\n");
+            VERBOSE_LOG("Connection closed\n");
             return -1;
         }
         else
         {
-            printf("recv failed with error: %d\n", WSAGetLastError());
+            VERBOSE_LOG("recv failed with error: %d\n", WSAGetLastError());
             return -1;
         }
     }
@@ -194,10 +195,10 @@ void WriteToSocket(psocket_t socket, s32 size, void* src_memory)
     s32 iSendResult = send(socket, src_memory, size, 0);
 
     if (iSendResult == SOCKET_ERROR) {
-        printf("send failed with error: %d\n", WSAGetLastError());
+        VERBOSE_LOG("send failed with error: %d\n", WSAGetLastError());
         return;
     }
-    printf("Bytes sent: %d\n", iSendResult);
+    VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }
 
 void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory)
@@ -210,8 +211,8 @@ void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory)
     s32 iSendResult = sendto(socket, src_memory, size, 0, (SOCKADDR*)&to, sizeof(to));
 
     if (iSendResult == SOCKET_ERROR) {
-        printf("send failed with error: %d\n", WSAGetLastError());
+        VERBOSE_LOG("send failed with error: %d\n", WSAGetLastError());
         return;
     }
-    printf("Bytes sent: %d\n", iSendResult);
+    VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }

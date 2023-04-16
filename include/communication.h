@@ -1,4 +1,4 @@
-// Contains common communication primatives
+// Contains common communication primatives and functions
 // Padding is disabled for all structures in this file, 
 // because they are meant to be sent over the wire
 
@@ -8,6 +8,8 @@
 
 #include "types.h"
 #include "psocket.h"
+
+#define DATA_CHUNCK_SIZE KB(1)
 
 #pragma pack(push, 1)
 
@@ -28,7 +30,7 @@ enum {
     END
 } transfer_response;
 
-#define DATA_CHUNCK_SIZE KB(1)
+enum transfer_response GetTransferResponseFromUser();
 
 struct data_chunck
 {
@@ -37,8 +39,8 @@ struct data_chunck
     char data[DATA_CHUNCK_SIZE];
 };
 
-void ReciveFileInChuncks(FILE* file, psocket_t socket);
 void SendFileInChuncks(FILE* file, psocket_t socket);
+void ReciveFileInChuncks(FILE* file, psocket_t socket);
 
 struct network_discovery_request
 {
@@ -47,8 +49,5 @@ struct network_discovery_request
 };
 
 struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4);
-
-//TODO: This is a utility function, and should really move somewhere else
-s64 UtilGetFileSize(FILE* f);
 
 #pragma pack(pop)

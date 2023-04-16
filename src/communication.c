@@ -1,3 +1,4 @@
+#include "log.h"
 #include "communication.h"
 
 #include <string.h>
@@ -25,6 +26,23 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(cons
     return req;
 }
 
+enum transfer_response GetTransferResponseFromUser()
+{
+    USER_LOG("Do you want to recieve this file? (Y/N)\n");
+
+    //Read answer to promt
+    char c;
+    scanf(" %c", &c);
+    
+    //Set the correct response
+    enum transfer_response resp;
+    if (c == 'Y')
+    {
+        return OK;
+    }
+        
+    return NOT_OK;
+}
 
 void ReciveFileInChuncks(FILE* file, psocket_t socket)
 {
@@ -39,7 +57,7 @@ void ReciveFileInChuncks(FILE* file, psocket_t socket)
 
     free(chunck);
 
-    printf("Recived all chuncks!\n");
+    DEBUG_LOG("Recived all chuncks!\n");
 }
 
 void SendFileInChuncks(FILE* file, psocket_t socket)
@@ -60,17 +78,5 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
 
     free(chunck);
 
-    printf("Sent all chuncks!\n");
-}
-
-s64 UtilGetFileSize(FILE* f)
-{
-    s64 current_pos = ftell(f);
-    fseek(f, 0L, SEEK_END);
-
-    s64 size = ftell(f);
-
-    fseek(f, current_pos, SEEK_SET);
-
-    return size;
+    DEBUG_LOG("Sent all chuncks!\n");
 }

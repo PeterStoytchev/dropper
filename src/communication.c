@@ -72,20 +72,24 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
 
     u32 chunck_counter = 0;
-    u32 total_chuncks = RoundClosestUp((u32)UtilGetFileSize(file), DATA_CHUNCK_SIZE);
+    u32 total_chuncks = RoundClosestUp(total_file_size, DATA_CHUNCK_SIZE);
 
     do
     {
         ReadFromSocket(socket, sizeof(struct data_chunck), chunck);
         fwrite(chunck->data, chunck->data_chunk_usage, 1, file);
 
-        USER_LOG("Progress %lu/%lu\n", ++chunck_counter, total_chuncks);
+        if (++chunck_counter % 100 == 0)
+        {
+            USER_LOG("Progress %lu/%lu chuncks!\r", chunck_counter, total_chuncks);
+        }
     }
     while (chunck->next_info != END);
 
     free(chunck);
 
-    DEBUG_LOG("Recived all chuncks!\n");
+    USER_LOG("Progress %lu/%lu\n", chunck_counter, total_chuncks);
+    USER_LOG("Recived all chuncks!\n");
 }
 
 void SendFileInChuncks(FILE* file, psocket_t socket)
@@ -105,11 +109,15 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
 
         WriteToSocket(socket, sizeof(struct data_chunck), chunck);
 
-        USER_LOG("Progress %lu/%lu\n", ++chunck_counter, total_chuncks);
+        if (++chunck_counter % 100 == 0)
+        {
+            USER_LOG("Progress %lu/%lu chuncks!\r", chunck_counter, total_chuncks);
+        }
     }
     while (chunck->next_info != END);
 
     free(chunck);
 
-    DEBUG_LOG("Sent all chuncks!\n");
+    USER_LOG("Progress %lu/%lu\n", chunck_counter, total_chuncks);
+    USER_LOG("Sent all chuncks!\n");
 }

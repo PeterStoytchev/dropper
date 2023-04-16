@@ -5,10 +5,17 @@
 // A lot of copy-pasta from: https://learn.microsoft.com/en-us/windows/win32/winsock/complete-server-code
 // and: https://learn.microsoft.com/en-us/windows/win32/winsock/complete-client-code
 
+// Not good practice, but it will do
+static s8 isWSAStarted = 0;
+
 void StartWSA()
 {
+    if (isWSAStarted)
+        return;
+
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2,2), &wsaData);
+    isWSAStarted = 1;
 }
 
 psocket_t OpenSocket()
@@ -73,10 +80,11 @@ psocket_t OpenSocketUDPServer()
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
     hints.ai_flags = AI_PASSIVE;
 
     // iResult the server address and port
-    s32 iResult = getaddrinfo(NULL, "6708", &hints, &result);
+    s32 iResult = getaddrinfo(NULL, NETWORK_PORT_BROADCAST, &hints, &result);
 
     // Create a SOCKET for the server to listen for client connections.
     SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
@@ -93,27 +101,10 @@ psocket_t OpenSocketBroadcast()
 {
     StartWSA();
 
-    struct addrinfo *result = NULL;
+    SOCKET ListenSocket = socket(AF_INET, SOCK_DGRAM, 0);
 
-    //Not very flexible, but this abstraction layer is just for this app
-    //To be changed if needed
-    struct addrinfo hints;
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
-    hints.ai_flags = AI_PASSIVE;
-
-    // iResult the server address and port
-    s32 iResult = getaddrinfo(NULL, NETWORK_PORT_BROADCAST, &hints, &result);
-
-    // Create a SOCKET for the server to listen for client connections.
-    SOCKET ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-
-    int iOptVal = 1;
-    setsockopt(ListenSocket, SOL_SOCKET, SO_BROADCAST, &iOptVal, sizeof(int));
-
-    freeaddrinfo(result);
+    s32 iOptVal = 1;
+    setsockopt(ListenSocket, SOL_SOCKET, SO_BROADCAST, &iOptVal, sizeof(s32));
 
     return ListenSocket;
 }
@@ -213,7 +204,7 @@ void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory)
 {
     struct sockaddr_in to;
     to.sin_family = AF_INET;
-    to.sin_port = 13338;
+    to.sin_port = htons(13338);
     to.sin_addr.s_addr = inet_addr("255.255.255.255");
 
     s32 iSendResult = sendto(socket, src_memory, size, 0, (SOCKADDR*)&to, sizeof(to));

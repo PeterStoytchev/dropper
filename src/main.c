@@ -82,11 +82,10 @@ void sender_entrypoint(const char* dir)
         return;
     }
 
-    free((void*)file_name);
-
     psocket_t broadcast_socket = OpenSocketBroadcast();
     
     struct network_discovery_request req = CreateNetworkDiscoveryRequestFromEnv();
+
 
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us
@@ -126,6 +125,8 @@ void sender_entrypoint(const char* dir)
 
     fclose(f);
     CloseSocket(sending_socket);
+
+    free((void*)file_name);
 }
 
 int main(int argc, char* argv[])

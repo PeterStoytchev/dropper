@@ -43,7 +43,7 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket);
 struct network_discovery_request
 {
     char name[32];
-    char ipv4[3*4]; //IPv4 of format xxx.xxx.xxx.xxx
+    char ipv4[4*4]; //IPv4 of format xxx.xxx.xxx.xxx
 };
 
 struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv();

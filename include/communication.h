@@ -22,10 +22,10 @@ struct file_transfer_request
 struct file_transfer_request CreateFileTransferRequest(const char* file_name, FILE* f);
 
 enum {
-    NONE,
-    OK,
-    NOT_OK,
-    END
+    TR_NONE,
+    TR_OK,
+    TR_NOT_OK,
+    TR_END
 } transfer_response;
 
 enum transfer_response GetTransferResponseFromUser();
@@ -37,8 +37,8 @@ struct data_chunck
     char data[DATA_CHUNCK_SIZE];
 };
 
-void SendFileInChuncks(FILE* file, psocket_t socket);
-void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket);
+void SendFileInChuncks(FILE* file, struct psocket socket);
+void ReciveFileInChuncks(FILE* file, u64 total_file_size, struct psocket socket);
 
 struct network_discovery_request
 {

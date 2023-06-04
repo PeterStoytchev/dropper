@@ -27,6 +27,10 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(cons
     return req;
 }
 
+//@Bug: This needs to be based on a socket (or its network adapter?) so that we grab
+//the correct hostname, otherwise we could be sending the wrong name.
+
+//@Alt: Make this user configurable (store it somewhere, file?)
 struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv()
 {
     // Get the PC's hostname
@@ -54,10 +58,10 @@ enum transfer_response GetTransferResponseFromUser()
     //Set the correct response
     if (c == 'Y')
     {
-        return OK;
+        return TR_OK;
     }
         
-    return NOT_OK;
+    return TR_NOT_OK;
 }
 
 // Stolen from: https://stackoverflow.com/a/2422723
@@ -67,7 +71,7 @@ u32 RoundClosestUp(u32 dividend, u32 divisor)
     return (dividend + (divisor / 2)) / divisor;
 }
 
-void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
+void ReciveFileInChuncks(FILE* file, u64 total_file_size, struct psocket socket)
 {
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
 
@@ -84,7 +88,7 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
             USER_LOG("Progress %lu/%lu chuncks!\r", chunck_counter, total_chuncks);
         }
     }
-    while (chunck->next_info != END);
+    while (chunck->next_info != TR_END);
 
     free(chunck);
 
@@ -92,10 +96,10 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, psocket_t socket)
     USER_LOG("Recived all chuncks!\n");
 }
 
-void SendFileInChuncks(FILE* file, psocket_t socket)
+void SendFileInChuncks(FILE* file, struct psocket socket)
 {
     struct data_chunck* chunck = (struct data_chunck*)malloc(sizeof(struct data_chunck));
-    chunck->next_info = OK;
+    chunck->next_info = TR_OK;
 
     u32 chunck_counter = 0;
     u32 total_chuncks = RoundClosestUp((u32)UtilGetFileSize(file), DATA_CHUNCK_SIZE);
@@ -105,7 +109,7 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
         chunck->data_chunk_usage = (u16)fread(chunck->data, 1, DATA_CHUNCK_SIZE, file);
         
         if (chunck->data_chunk_usage != DATA_CHUNCK_SIZE)
-            chunck->next_info = END;
+            chunck->next_info = TR_END;
 
         WriteToSocket(socket, sizeof(struct data_chunck), chunck);
 
@@ -114,7 +118,7 @@ void SendFileInChuncks(FILE* file, psocket_t socket)
             USER_LOG("Progress %lu/%lu chuncks!\r", chunck_counter, total_chuncks);
         }
     }
-    while (chunck->next_info != END);
+    while (chunck->next_info != TR_END);
 
     free(chunck);
 

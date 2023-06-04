@@ -7,38 +7,47 @@
 
 #ifdef OS_WINDOWS
 
-#define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
 
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+    #include <windows.h>
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
 
-#define NETWORK_PORT "13337"
-#define NETWORK_PORT_BROADCAST "13338"
-
-typedef SOCKET psocket_t;
+    typedef SOCKET psocket_raw;
 
 #else
 
-typedef s32 psocket_t;
+    typedef s32 psocket_raw;
+
+#endif
 
 #define NETWORK_PORT 13337
 #define NETWORK_PORT_BROADCAST 13338
 
-#endif
+enum {
+    PROTO_NONE,
+    PROTO_TCP,
+    PROTO_UDP
+} psocket_proto;
+
+enum {
+    STYPE_NONE,
+    STYPE_CLIENT,
+    STYPE_SERVER
+} psocket_type;
+
+struct psocket
+{
+    enum psocket_type type;
+    enum psocket_proto proto;
+    psocket_raw handle;
+};
 
 
-psocket_t OpenSocket();
-psocket_t OpenSocketAtDestination(const char* dst);
-psocket_t OpenSocketUDPServer();
-psocket_t OpenSocketBroadcast();
+struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, const char* ip, u16 port);
+void CloseSocket(struct psocket socket);
 
-void CloseSocket(psocket_t socket);
+struct psocket AcceptSocket(struct psocket server_socket);
 
-void ListenSocket(psocket_t socket);
-psocket_t AcceptSocket(psocket_t server_socket);
-
-void WriteToSocket(psocket_t socket, s32 size, void* src_memory);
-void WriteToBroadcast(psocket_t socket, s32 size, void* src_memory);
-s8 ReadFromSocket(psocket_t socket, s32 size, void* dst_memory);
-s8 ReadFromBroadcast(psocket_t socket, s32 size, void* dst_memory);
+s8 ReadFromSocket(struct psocket socket, s32 size, void* dst_memory);
+void WriteToSocket(struct psocket socket, s32 size, void* src_memory);

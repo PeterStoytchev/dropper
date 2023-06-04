@@ -67,4 +67,6 @@ char* GetFileNameWitoutPath(const char* src_str, u64 len)
             return new_buffer;
         }
     }
+
+    return NULL;
 }

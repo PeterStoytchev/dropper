@@ -19,7 +19,8 @@ void reciver_entrypoint(const char* dir)
 
     CloseSocket(broadcast_reply_socket);
 
-    char* ip_str = IPtoString(remote_ip);
+    char ip_str[INET_ADDRSTRLEN];
+    IPtoString(remote_ip, ip_str, INET_ADDRSTRLEN);
 
     DEBUG_LOG("Got a broadcast from %s, calling back to %s\n", req.name, ip_str);
 
@@ -60,7 +61,7 @@ void reciver_entrypoint(const char* dir)
             {
                 const char* final_path = ConcatenatePath(dir, tr.file_name);
                 f = fopen(final_path, "wb");
-                free((void*)final_path);
+                free(final_path);
             }
             else
             {
@@ -74,8 +75,6 @@ void reciver_entrypoint(const char* dir)
             USER_LOG("File received\n");
         }
     }
-
-    free(ip_str); 
 }
 
 void sender_entrypoint(const char* dir)
@@ -99,6 +98,7 @@ void sender_entrypoint(const char* dir)
 
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us
+    //@Note: Windows only sends brodcasts out of the 'main' network adatapter (for some reason?), so this my not find all recivers (look into using multicast instead?)
     WriteToSocket(broadcast_socket, sizeof(req), &req);
     CloseSocket(broadcast_socket);
 

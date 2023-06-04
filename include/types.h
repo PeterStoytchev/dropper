@@ -20,3 +20,11 @@ typedef double f64;
 #define KB(x) x * 1024
 #define MB(x) KB(x) * 1024
 #define GB(x) MB(x) * 1024
+
+#define OS_WINDOWS
+
+#ifdef OS_WINDOWS
+    #define PATH_CHAR '\\'
+#else
+    #define PATH_CHAR '/'
+#endif

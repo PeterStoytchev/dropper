@@ -133,6 +133,8 @@ u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory)
 
 u32 GetRemoteAddress(struct psocket s)
 {
+    assert(s.proto == PROTO_TCP);
+
     struct sockaddr_in from;
     s32 fromLen = sizeof(from);
 
@@ -184,15 +186,17 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
     VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }
 
-
-char* IPtoString(u32 ip)
+void IPtoString(u32 ip, void* buf, u64 buf_size)
 {
-    char* buf = malloc(INET_ADDRSTRLEN);
-    memset(buf, 0, INET_ADDRSTRLEN);
+    assert(buf_size >= INET_ADDRSTRLEN);
+
+    memset(buf, 0, buf_size);
 
     struct sockaddr_in src;
     src.sin_family = AF_INET;
     src.sin_addr.s_addr = ip;
 
-    return inet_ntop(AF_INET, (struct sockaddr*)&src, buf, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, (struct sockaddr*)&src, buf, buf_size);
+
+    return;
 }

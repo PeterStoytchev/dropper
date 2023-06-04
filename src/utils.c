@@ -8,7 +8,6 @@
 // This is temporary
 #define OS_WINDOWS
 
-
 s64 UtilGetFileSize(FILE* f)
 {
     s32 current_pos = ftell(f);
@@ -23,39 +22,21 @@ s64 UtilGetFileSize(FILE* f)
 
 const char* ConcatenatePath(const char* dir, const char* file_name)
 {
-    u64 dir_len = strlen(dir);
-    u64 file_name_len = strlen(file_name);
-
-    u64 storage_len = dir_len + file_name_len + 1;
+    u64 storage_len = strlen(dir) + strlen(file_name) + 1;
     char* storage = (char*)malloc(storage_len);
     memset(storage, 0, storage_len);
 
-    memcpy(storage, dir, dir_len);
-    
-    // This should be temporary
-    #ifdef OS_WINDOWS
-        storage[dir_len] = '\\';
-    #else
-        storage[dir_len] = '/';
-    #endif
-
-    memcpy(storage + dir_len + 1, file_name, file_name_len);
+    sprintf(storage, "%s%c%s\n", dir, PATH_CHAR, file_name);
 
     return storage;
 }
 
 char* GetFileNameWitoutPath(const char* src_str, u64 len)
 {
-    #ifdef OS_WINDOWS
-        char splitter = '\\';
-    #else
-        char splitter = '/';
-    #endif
-
     u64 loc = 0;
     for (u64 i = len - 1; i != 0; i--)
     {
-        if (src_str[i] == splitter)
+        if (src_str[i] == PATH_CHAR)
         {
             if (i == 0)
                 return NULL;

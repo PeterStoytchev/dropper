@@ -52,12 +52,12 @@ struct psocket AcceptSocket(struct psocket server_socket);
 s8 ReadFromSocket(struct psocket socket, s32 size, void* dst_memory);
 void WriteToSocket(struct psocket socket, s32 size, void* src_memory);
 
-// Gets the IP of the device on the other side of the socket
+//@Func: Gets the IP of the machine on the other side
+//@Note: Only works for TCP sockets. For UDP, see ReadFromSocket_GetIncoming()
 u32 GetRemoteAddress(struct psocket s);
 
-// For UDP, there is no way to get the remote adress whenever,
-// but we can get it when reading. This function does that!
+//@Func: Gets the IP of the machine on the other side
+//@Note: Only works for UDP sockets. For TCP, see GetRemoteAddress()
 u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory);
 
-//@Note: Only supports IPv4
-char* IPtoString(u32 ip);
+void IPtoString(u32 ip, void* buf, u64 buf_size);

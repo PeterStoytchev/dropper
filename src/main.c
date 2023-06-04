@@ -7,24 +7,22 @@
 #include "psocket.h"
 #include "communication.h"
 
-//TODO: Broadcast on all interfaces, so that PCs with multiple NICs can actually use this...
-
 void reciver_entrypoint(const char* dir)
 {
     DEBUG_LOG("Reciver mode\n");
 
-    psocket_t broadcast_reply_socket = OpenSocketUDPServer();
+    struct psocket broadcast_reply_socket = CreateSocket(STYPE_SERVER, PROTO_UDP, NULL, NETWORK_PORT_BROADCAST);
     struct network_discovery_request req;
 
     DEBUG_LOG("Stuck on reading...\n");
-    ReadFromBroadcast(broadcast_reply_socket, sizeof(req), &req);
+    ReadFromSocket(broadcast_reply_socket, sizeof(req), &req);
 
     CloseSocket(broadcast_reply_socket);
 
     DEBUG_LOG("Got a broadcast, calling back to %s\n", req.ipv4);
 
     {
-        psocket_t sender_socket = OpenSocketAtDestination(req.ipv4);
+        struct psocket sender_socket = CreateSocket(STYPE_CLIENT, PROTO_TCP, req.ipv4, NETWORK_PORT);
 
         struct file_transfer_request tr;
         memset(&tr, 0, sizeof(tr));
@@ -45,13 +43,13 @@ void reciver_entrypoint(const char* dir)
         WriteToSocket(sender_socket, sizeof(resp), &resp);
 
         //If we sent a no, we exit
-        if (resp == NOT_OK)
+        if (resp == TR_NOT_OK)
         {
             USER_LOG("File transfer declined!\n");
 
             CloseSocket(sender_socket);
         }
-        else if (resp == OK) //If we sent a yes, we read the file in chuncks
+        else if (resp == TR_OK) //If we sent a yes, we read the file in chuncks
         {
             USER_LOG("File transfer accepted!\n");
 
@@ -80,7 +78,7 @@ void sender_entrypoint(const char* dir)
 {
     DEBUG_LOG("Sender mode\n");
 
-    const char* file_name = GetLastSection(dir, strlen(dir), '\\');
+    const char* file_name = GetFileNameWitoutPath(dir, strlen(dir));
     if (file_name == NULL)
     {
         DEBUG_LOG("Couldn't extract the file name, ERROR AND EXIT!\n");
@@ -91,23 +89,21 @@ void sender_entrypoint(const char* dir)
         return;
     }
 
-    psocket_t broadcast_socket = OpenSocketBroadcast();
+    struct psocket broadcast_socket = CreateSocket(STYPE_CLIENT, PROTO_UDP, NULL, NETWORK_PORT_BROADCAST);
     
     struct network_discovery_request req = CreateNetworkDiscoveryRequestFromEnv();
 
-
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us
-    WriteToBroadcast(broadcast_socket, sizeof(req), &req);
+    WriteToSocket(broadcast_socket, sizeof(req), &req);
     CloseSocket(broadcast_socket);
 
     DEBUG_LOG("Broadcast sent, listeing for callbacks!\n");
-    psocket_t server_socket = OpenSocket();
-    ListenSocket(server_socket);
+    struct psocket server_socket = CreateSocket(STYPE_SERVER, PROTO_TCP, NULL, NETWORK_PORT_BROADCAST);
     
     // For now, just accept the first one to connect back
     // Later, this will run for some time, before we present the user with a list
-    psocket_t sending_socket = AcceptSocket(server_socket);
+    struct psocket sending_socket = AcceptSocket(server_socket);
 
     // Don't need the server socket anymore
     CloseSocket(server_socket);
@@ -115,18 +111,18 @@ void sender_entrypoint(const char* dir)
     FILE* f = fopen(dir, "rb");
 
     struct file_transfer_request tr = CreateFileTransferRequest(file_name, f);
-    WriteToSocket(sending_socket, sizeof(tr), &tr);
+    WriteToSocket(sending_socket, sizeof(tr), &tr); //Send the transfer request
 
     USER_LOG("Sent file transfer request!\n");
 
     enum transfer_response fr;
-    ReadFromSocket(sending_socket, sizeof(fr), &fr);
+    ReadFromSocket(sending_socket, sizeof(fr), &fr); //Get response
 
-    if (fr == NOT_OK)
+    if (fr == TR_NOT_OK)
     {
         USER_LOG("Remote user declied your request!\n");
     }
-    else if (fr == OK)
+    else if (fr == TR_OK)
     {
         USER_LOG("Remote user accepted your request!\nSending file!\n");
         SendFileInChuncks(f, sending_socket);

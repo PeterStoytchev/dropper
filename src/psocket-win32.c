@@ -2,6 +2,7 @@
 #include "log.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 
 // A lot of copy-pasta from: https://learn.microsoft.com/en-us/windows/win32/winsock/complete-server-code
@@ -23,15 +24,10 @@ void StartWSA()
 
 //@Note: If null is passed to ip parameter, we assume 0.0.0.0 for servers and 255.255.255.255 for clients
 // Please handle input carefully, so that you don't broadcast unintentionally!
-struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, const char* ip, u16 port)
+struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, u32 ip, u16 port)
 {
     assert(type != STYPE_NONE);
     assert(proto != PROTO_NONE);
-
-    if (ip == NULL && type == STYPE_CLIENT)
-    {
-        assert(proto == PROTO_UDP);
-    }
 
     struct psocket s;
     memset(&s, 0 , sizeof(s));
@@ -51,23 +47,14 @@ struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, co
     address.sin_family = AF_INET; 
     address.sin_port = htons(port);
 
-    if (ip == NULL)
-    {
-        if (type == STYPE_SERVER)
-        {
-            address.sin_addr.s_addr = INADDR_ANY;
-        }
-        else
-        {
-            address.sin_addr.s_addr = INADDR_BROADCAST;
+    address.sin_addr.s_addr = ip;
 
-            s32 iOptVal = 1;
-            setsockopt(s.handle, SOL_SOCKET, SO_BROADCAST, &iOptVal, sizeof(s32));
-        }
-    }
-    else
+    if (ip == NULL && type == STYPE_CLIENT)
     {
-        address.sin_addr.s_addr = inet_addr(ip);
+        address.sin_addr.s_addr = INADDR_BROADCAST;
+        
+        s32 iOptVal = 1;
+        setsockopt(s.handle, SOL_SOCKET, SO_BROADCAST, &iOptVal, sizeof(s32));
     }
 
     s32 iResult;
@@ -76,12 +63,14 @@ struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, co
         iResult = bind(s.handle, (struct sockaddr*)&address, sizeof(address));
 
         if (proto == PROTO_TCP)
-            listen(s.handle, SOMAXCONN);
+            iResult = listen(s.handle, SOMAXCONN);
     }
     else
     {
         iResult = connect(s.handle, (struct sockaddr*)&address, sizeof(address));
     }
+
+    assert(iResult >= 0);
 
     return s;
 }
@@ -101,6 +90,53 @@ struct psocket AcceptSocket(struct psocket s)
 void CloseSocket(struct psocket s)
 {
     closesocket(s.handle);
+}
+
+u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory)
+{
+    assert(s.proto == PROTO_UDP);
+
+    s32 bytes_recived = 0;
+
+    struct sockaddr_in from;
+    s32 fromLen = sizeof(from);
+
+    while (bytes_recived != size)
+    {
+        s32 iResult = recvfrom(s.handle, (char*)dst_memory + bytes_recived, size - bytes_recived, 0, (struct sockaddr*)&from, &fromLen);
+
+        if (iResult > 0 )
+        {
+            bytes_recived += iResult;
+            VERBOSE_LOG("Bytes received: %d\n", iResult);
+
+            break;
+        }
+        else if (iResult == 0)
+        {
+            VERBOSE_LOG("Connection closed\n");
+            break;
+        }
+        else
+        {
+            VERBOSE_LOG("recv failed with error: %d\n", WSAGetLastError());
+            break;
+        }
+    }
+
+    return from.sin_addr.s_addr;
+}
+
+u32 GetRemoteAddress(struct psocket s)
+{
+    struct sockaddr_in from;
+    s32 fromLen = sizeof(from);
+
+    s32 iResult = getpeername(s.handle, (struct sockaddr*)&from, &fromLen);
+
+    assert(iResult == 0);
+
+    return from.sin_addr.s_addr;
 }
 
 s8 ReadFromSocket(struct psocket s, s32 size, void* dst_memory)
@@ -142,4 +178,16 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
         return;
     }
     VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
+}
+
+
+char* IPtoString(u32 ip)
+{
+    char* buf = malloc(INET_ADDRSTRLEN);
+
+    struct sockaddr_in src;
+    src.sin_family = AF_INET;
+    src.sin_addr.s_addr = ip;
+
+    return inet_ntop(AF_INET, (struct sockaddr*)&src, buf, INET_ADDRSTRLEN);
 }

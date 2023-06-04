@@ -43,10 +43,8 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, struct psocket socket)
 struct network_discovery_request
 {
     char name[32];
-    char ipv4[4*4]; //IPv4 of format xxx.xxx.xxx.xxx
 };
 
-struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv();
-struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4);
+struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name);
 
 #pragma pack(pop)

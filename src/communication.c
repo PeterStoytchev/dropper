@@ -17,35 +17,14 @@ struct file_transfer_request CreateFileTransferRequest(const char* file_name, FI
     return tr;
 }
 
-struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name, const char* ipv4)
+struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name)
 {
     struct network_discovery_request req;
     
     strcpy(req.name, name);
-    strcpy(req.ipv4, ipv4);
 
     return req;
 }
-
-//@Bug: This needs to be based on a socket (or its network adapter?) so that we grab
-//the correct hostname, otherwise we could be sending the wrong name.
-
-//@Alt: Make this user configurable (store it somewhere, file?)
-struct network_discovery_request CreateNetworkDiscoveryRequestFromEnv()
-{
-    // Get the PC's hostname
-    char host[256];
-    memset(host, 0, sizeof(host));
-    gethostname(host, sizeof(host));
-
-    // Get the PC's IP
-    struct hostent *host_entry = gethostbyname(host);
-    char *IP = inet_ntoa(*((struct in_addr*) host_entry->h_addr_list[0]));
-
-    // This shouldn't cause memory issues, since we call the next function, before we return
-    return CreateNetworkDiscoveryRequestFromConstants(host, IP);
-}
-
 
 enum transfer_response GetTransferResponseFromUser()
 {

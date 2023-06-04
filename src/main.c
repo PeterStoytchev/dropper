@@ -15,14 +15,16 @@ void reciver_entrypoint(const char* dir)
     struct network_discovery_request req;
 
     DEBUG_LOG("Stuck on reading...\n");
-    ReadFromSocket(broadcast_reply_socket, sizeof(req), &req);
+    u32 remote_ip = ReadFromSocket_GetIncoming(broadcast_reply_socket, sizeof(req), &req);
 
     CloseSocket(broadcast_reply_socket);
 
-    DEBUG_LOG("Got a broadcast, calling back to %s\n", req.ipv4);
+    char* ip_str = IPtoString(remote_ip);
+
+    DEBUG_LOG("Got a broadcast from %s, calling back to %s\n", req.name, ip_str);
 
     {
-        struct psocket sender_socket = CreateSocket(STYPE_CLIENT, PROTO_TCP, req.ipv4, NETWORK_PORT);
+        struct psocket sender_socket = CreateSocket(STYPE_CLIENT, PROTO_TCP, remote_ip, NETWORK_PORT);
 
         struct file_transfer_request tr;
         memset(&tr, 0, sizeof(tr));
@@ -32,7 +34,7 @@ void reciver_entrypoint(const char* dir)
         USER_LOG("Got a file request!\n");
 
         USER_LOG("Sender Name: %s\n", req.name);
-        USER_LOG("Sender Address: %s\n", req.ipv4);
+        USER_LOG("Sender Address: %s\n", ip_str);
         USER_LOG("File Name: %s\n", tr.file_name);
         USER_LOG("File Size: %f\n", (f32)tr.file_size / (f32)1024 / (f32)1024);
 
@@ -71,7 +73,9 @@ void reciver_entrypoint(const char* dir)
 
             USER_LOG("File received\n");
         }
-    }    
+    }
+
+    free(ip_str); 
 }
 
 void sender_entrypoint(const char* dir)
@@ -91,7 +95,7 @@ void sender_entrypoint(const char* dir)
 
     struct psocket broadcast_socket = CreateSocket(STYPE_CLIENT, PROTO_UDP, NULL, NETWORK_PORT_BROADCAST);
     
-    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromEnv();
+    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromConstants("ivan");
 
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us

@@ -44,10 +44,20 @@ struct psocket
 };
 
 
-struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, const char* ip, u16 port);
+struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, u32 ip, u16 port);
 void CloseSocket(struct psocket socket);
 
 struct psocket AcceptSocket(struct psocket server_socket);
 
 s8 ReadFromSocket(struct psocket socket, s32 size, void* dst_memory);
 void WriteToSocket(struct psocket socket, s32 size, void* src_memory);
+
+// Gets the IP of the device on the other side of the socket
+u32 GetRemoteAddress(struct psocket s);
+
+// For UDP, there is no way to get the remote adress whenever,
+// but we can get it when reading. This function does that!
+u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory);
+
+//@Note: Only supports IPv4
+char* IPtoString(u32 ip);

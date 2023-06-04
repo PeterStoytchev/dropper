@@ -52,6 +52,7 @@ char* GetFileNameWitoutPath(const char* src_str, u64 len)
         char splitter = '/';
     #endif
 
+    u64 loc = 0;
     for (u64 i = len - 1; i != 0; i--)
     {
         if (src_str[i] == splitter)
@@ -59,14 +60,15 @@ char* GetFileNameWitoutPath(const char* src_str, u64 len)
             if (i == 0)
                 return NULL;
 
-            u64 new_buffer_size = len - i + 1;
-
-            char* new_buffer = (char*)malloc(new_buffer_size);
-            memcpy(new_buffer, src_str + i + 1, new_buffer_size);
-        
-            return new_buffer;
+            loc = i;
+            break;
         }
     }
 
-    return NULL;
+    u64 new_buffer_size = len - loc + 1;
+
+    char* new_buffer = (char*)malloc(new_buffer_size);
+    memcpy(new_buffer, src_str + loc, new_buffer_size);
+
+    return new_buffer;
 }

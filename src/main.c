@@ -103,7 +103,7 @@ void sender_entrypoint(const char* dir)
     CloseSocket(broadcast_socket);
 
     DEBUG_LOG("Broadcast sent, listeing for callbacks!\n");
-    struct psocket server_socket = CreateSocket(STYPE_SERVER, PROTO_TCP, NULL, NETWORK_PORT_BROADCAST);
+    struct psocket server_socket = CreateSocket(STYPE_SERVER, PROTO_TCP, NULL, NETWORK_PORT);
     
     // For now, just accept the first one to connect back
     // Later, this will run for some time, before we present the user with a list

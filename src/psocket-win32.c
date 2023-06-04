@@ -72,6 +72,9 @@ struct psocket CreateSocket(enum psocket_type type, enum psocket_proto proto, u3
 
     assert(iResult >= 0);
 
+    s.type = type;
+    s.proto = proto;
+
     return s;
 }
 
@@ -99,6 +102,7 @@ u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory)
     s32 bytes_recived = 0;
 
     struct sockaddr_in from;
+    memset(&from, 0, sizeof(from));
     s32 fromLen = sizeof(from);
 
     while (bytes_recived != size)
@@ -184,6 +188,7 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
 char* IPtoString(u32 ip)
 {
     char* buf = malloc(INET_ADDRSTRLEN);
+    memset(buf, 0, INET_ADDRSTRLEN);
 
     struct sockaddr_in src;
     src.sin_family = AF_INET;

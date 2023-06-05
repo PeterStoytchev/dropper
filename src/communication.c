@@ -26,6 +26,18 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(cons
     return req;
 }
 
+struct network_discovery_request CreateNetworkDiscoveryRequestFromUserAcc()
+{
+    struct network_discovery_request ndr;
+    u32 bufCharCount = MAX_NAME_LENGTH;
+
+    memset(&ndr, 0, sizeof(ndr));
+
+    GetUserName(ndr.name, &bufCharCount);
+    
+    return ndr;
+}
+
 enum transfer_response GetTransferResponseFromUser()
 {
     USER_LOG("Do you want to recieve this file? (Y/N)\n");

@@ -2,10 +2,6 @@
 
 #include <stdio.h>
 
-// This is temporary
-
-#define USER_LOG_LEVEL
-#define DEBUG_LOG_LEVEL
 
 // This looks horrible, but its simple and it just works
 #ifdef USER_LOG_LEVEL

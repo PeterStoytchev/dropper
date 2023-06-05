@@ -11,6 +11,9 @@
 
 #define DATA_CHUNCK_SIZE KB(1)
 
+//@Note: The max len of a username in Windows is 15, for Linux 20, so I set 21 to be safe
+#define MAX_NAME_LENGTH 21
+
 #pragma pack(push, 1)
 
 struct file_transfer_request
@@ -42,9 +45,10 @@ void ReciveFileInChuncks(FILE* file, u64 total_file_size, struct psocket socket)
 
 struct network_discovery_request
 {
-    char name[32];
+    char name[MAX_NAME_LENGTH];
 };
 
 struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(const char* name);
+struct network_discovery_request CreateNetworkDiscoveryRequestFromUserAcc();
 
 #pragma pack(pop)

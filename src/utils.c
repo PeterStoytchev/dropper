@@ -5,9 +5,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-// This is temporary
-#define OS_WINDOWS
-
 s64 UtilGetFileSize(FILE* f)
 {
     s32 current_pos = ftell(f);

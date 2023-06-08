@@ -51,7 +51,7 @@ struct psocket AcceptSocket(struct psocket server_socket);
 s8 ReadFromSocket(struct psocket socket, s32 size, void* dst_memory);
 void WriteToSocket(struct psocket socket, s32 size, void* src_memory);
 
-void SetSocketBlocking(struct psocket sock, s8 ShouldBlock);
+void SetSocketBlocking(struct psocket sock, u32 ShouldBlock);
 
 //@Func: Gets the IP of the machine on the other side
 //@Note: Only works for TCP sockets. For UDP, see ReadFromSocket_GetIncoming()

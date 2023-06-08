@@ -50,3 +50,11 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromConstants(cons
 struct network_discovery_request CreateNetworkDiscoveryRequestFromUserAcc();
 
 #pragma pack(pop)
+
+struct recvrs_handler_data
+{
+    u8 start;
+    struct psocket server_socket;
+    struct psocket sockets[PSOCKET_MAX_SOCKET_SELECTS];
+    struct network_discovery_request reqs[PSOCKET_MAX_SOCKET_SELECTS];
+};

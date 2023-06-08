@@ -1,6 +1,5 @@
 #include "log.h"
 #include "utils.h"
-#include "threading.h"
 
 #include "communication.h"
 
@@ -75,42 +74,6 @@ enum transfer_response GetTransferResponseFromUser()
     return TR_NOT_OK;
 }
 
-struct recvrs_handler_data
-{
-    u8 start;
-    struct psocket server_socket;
-    struct psocket sockets[PSOCKET_MAX_SOCKET_SELECTS];
-    struct network_discovery_request reqs[PSOCKET_MAX_SOCKET_SELECTS];
-};
-
-void handle_recvrs(struct recvrs_handler_data* hd)
-{
-    Sleep(250);
-    for (;;)
-    {
-        SetSocketBlocking(hd->server_socket, 0);
-
-        struct psocket sock = AcceptSocket(hd->server_socket);
-
-        SetSocketBlocking(hd->server_socket, 1);
-
-        if (IsSocketHandleValid(sock))
-        {
-            hd->sockets[hd->start] = sock;
-            struct network_discovery_request* req = hd->reqs + hd->start;
-            ReadFromSocket(hd->sockets[hd->start], sizeof(struct network_discovery_request), req);
-            
-            hd->start++;
-    
-            if ((hd->start + 1) == PSOCKET_MAX_SOCKET_SELECTS)
-                break;
-        }
-        else
-        {
-            break;
-        }
-    }
-}
 
 void SocketCleanup(struct psocket* sockets, u32 except_index)
 {
@@ -123,6 +86,8 @@ void SocketCleanup(struct psocket* sockets, u32 except_index)
     }
 
 }
+
+void handle_recvrs(struct recvrs_handler_data* hd);
 
 struct psocket GetSocketSelectionFromUser(struct psocket server_socket)
 {

@@ -38,6 +38,36 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromUserAcc()
     return ndr;
 }
 
+void handle_recvrs(struct recvrs_handler_data* hd)
+{
+    Sleep(250); //@Cleanup: Abstract somewhere?
+    for (;;)
+    {
+        SetSocketBlocking(hd->server_socket, 0);
+
+        struct psocket sock = AcceptSocket(hd->server_socket);
+
+        SetSocketBlocking(hd->server_socket, 1);
+
+        if (IsSocketHandleValid(sock))
+        {
+            SetSocketBlocking(sock, 1);
+
+            hd->sockets[hd->start] = sock;
+            struct network_discovery_request* req = hd->reqs + hd->start;
+            ReadFromSocket(hd->sockets[hd->start], sizeof(struct network_discovery_request), req);
+            
+            hd->start++;
+    
+            if ((hd->start + 1) == PSOCKET_MAX_SOCKET_SELECTS)
+                break;
+        }
+        else
+        {
+            break;
+        }
+    }
+}
 
 // Stolen from: https://stackoverflow.com/a/2422723
 // May be moved later to the utils file

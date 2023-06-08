@@ -17,7 +17,7 @@
 #endif
 
 #ifdef VERBOSE_LOG_LEVEL
-    #define VERBOSE_LOG(...) printf("VERBOSE: "); printf(x, __VA_ARGS__)
+    #define VERBOSE_LOG(...) printf("VERBOSE: "); printf(__VA_ARGS__)
 #else
     #define VERBOSE_LOG(...)
 #endif

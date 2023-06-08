@@ -186,12 +186,13 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
     VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }
 
-void SetSocketBlocking(struct psocket sock, s8 ShouldBlock)
+void SetSocketBlocking(struct psocket sock, u32 ShouldBlock)
 {
     assert(sock.handle != 0);
 
-    u32 iMode = !ShouldBlock;
-    assert(ioctlsocket(sock.handle, FIONBIO, &iMode) == NO_ERROR);
+    ShouldBlock = !ShouldBlock;
+
+    assert(ioctlsocket(sock.handle, FIONBIO, &ShouldBlock) == NO_ERROR);
 }
 
 s32 IsSocketHandleValid(struct psocket s)

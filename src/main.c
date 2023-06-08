@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "log.h"
 #include "utils.h"
@@ -111,7 +112,6 @@ void sender_entrypoint(const char* dir)
     // Later, this will run for some time, before we present the user with a list
     struct psocket sending_socket = GetSocketSelectionFromUser(server_socket);
 
-
     // Don't need the server socket anymore
     CloseSocket(server_socket);
 
@@ -133,6 +133,11 @@ void sender_entrypoint(const char* dir)
     {
         USER_LOG("Remote user accepted your request!\nSending file!\n");
         SendFileInChuncks(f, sending_socket);
+    }
+    else
+    {
+        DEBUG_LOG("Shouldn't get here!");
+        assert(0);
     }
 
     fclose(f);

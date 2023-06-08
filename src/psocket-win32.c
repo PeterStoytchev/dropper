@@ -186,6 +186,19 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
     VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }
 
+void SetSocketBlocking(struct psocket sock, s8 ShouldBlock)
+{
+    assert(sock.handle != 0);
+
+    u32 iMode = !ShouldBlock;
+    assert(ioctlsocket(sock.handle, FIONBIO, &iMode) == NO_ERROR);
+}
+
+s32 IsSocketHandleValid(struct psocket s)
+{
+    return s.handle != INVALID_SOCKET;
+}
+
 char* IPtoString(u32 ip)
 {
     struct sockaddr_in src;

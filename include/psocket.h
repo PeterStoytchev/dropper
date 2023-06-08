@@ -21,6 +21,8 @@
 #define NETWORK_PORT 13337
 #define NETWORK_PORT_BROADCAST 13338
 
+#define PSOCKET_MAX_SOCKET_SELECTS 8
+
 enum {
     PROTO_NONE,
     PROTO_TCP,
@@ -49,6 +51,8 @@ struct psocket AcceptSocket(struct psocket server_socket);
 s8 ReadFromSocket(struct psocket socket, s32 size, void* dst_memory);
 void WriteToSocket(struct psocket socket, s32 size, void* src_memory);
 
+void SetSocketBlocking(struct psocket sock, s8 ShouldBlock);
+
 //@Func: Gets the IP of the machine on the other side
 //@Note: Only works for TCP sockets. For UDP, see ReadFromSocket_GetIncoming()
 u32 GetRemoteAddress(struct psocket s);
@@ -58,3 +62,5 @@ u32 GetRemoteAddress(struct psocket s);
 u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory);
 
 char* IPtoString(u32 ip);
+
+s32 IsSocketHandleValid(struct psocket s);

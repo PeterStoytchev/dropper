@@ -38,22 +38,6 @@ struct network_discovery_request CreateNetworkDiscoveryRequestFromUserAcc()
     return ndr;
 }
 
-enum transfer_response GetTransferResponseFromUser()
-{
-    USER_LOG("Do you want to recieve this file? (Y/N)\n");
-
-    //Read answer to promt
-    char c;
-    scanf(" %c", &c);
-    
-    //Set the correct response
-    if (c == 'Y')
-    {
-        return TR_OK;
-    }
-        
-    return TR_NOT_OK;
-}
 
 // Stolen from: https://stackoverflow.com/a/2422723
 // May be moved later to the utils file

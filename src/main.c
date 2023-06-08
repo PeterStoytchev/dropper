@@ -25,6 +25,9 @@ void reciver_entrypoint(const char* dir)
 
     {
         struct psocket sender_socket = CreateSocket(STYPE_CLIENT, PROTO_TCP, remote_ip, NETWORK_PORT);
+        
+        struct network_discovery_request req = CreateNetworkDiscoveryRequestFromUserAcc();
+        WriteToSocket(sender_socket, sizeof(req), &req);
 
         struct file_transfer_request tr;
         memset(&tr, 0, sizeof(tr));
@@ -86,7 +89,7 @@ void sender_entrypoint(const char* dir)
         DEBUG_LOG("Couldn't extract the file name, ERROR AND EXIT!\n");
         USER_LOG("Invalid path provided!\n");
 
-        free((void*)file_name);
+        free(file_name);
 
         return;
     }
@@ -106,7 +109,8 @@ void sender_entrypoint(const char* dir)
     
     // For now, just accept the first one to connect back
     // Later, this will run for some time, before we present the user with a list
-    struct psocket sending_socket = AcceptSocket(server_socket);
+    struct psocket sending_socket = GetSocketSelectionFromUser(server_socket);
+
 
     // Don't need the server socket anymore
     CloseSocket(server_socket);
@@ -134,7 +138,7 @@ void sender_entrypoint(const char* dir)
     fclose(f);
     CloseSocket(sending_socket);
 
-    free((void*)file_name);
+    free(file_name);
 }
 
 int main(int argc, char* argv[])

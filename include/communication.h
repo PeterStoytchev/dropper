@@ -31,8 +31,6 @@ enum {
     TR_END
 } transfer_response;
 
-enum transfer_response GetTransferResponseFromUser();
-
 struct data_chunck
 {
     u16 data_chunk_usage;

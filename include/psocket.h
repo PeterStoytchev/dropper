@@ -57,4 +57,4 @@ u32 GetRemoteAddress(struct psocket s);
 //@Note: Only works for UDP sockets. For TCP, see GetRemoteAddress()
 u32 ReadFromSocket_GetIncoming(struct psocket s, s32 size, void* dst_memory);
 
-void IPtoString(u32 ip, void* buf, u64 buf_size);
+char* IPtoString(u32 ip);

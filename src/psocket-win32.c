@@ -186,17 +186,11 @@ void WriteToSocket(struct psocket socket, s32 size, void* src_memory)
     VERBOSE_LOG("Bytes sent: %d\n", iSendResult);
 }
 
-void IPtoString(u32 ip, void* buf, u64 buf_size)
+char* IPtoString(u32 ip)
 {
-    assert(buf_size >= INET_ADDRSTRLEN);
-
-    memset(buf, 0, buf_size);
-
     struct sockaddr_in src;
     src.sin_family = AF_INET;
     src.sin_addr.s_addr = ip;
 
-    inet_ntop(AF_INET, (struct sockaddr*)&src, buf, buf_size);
-
-    return;
+    return inet_ntoa(src.sin_addr);
 }

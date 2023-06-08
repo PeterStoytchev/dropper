@@ -19,8 +19,7 @@ void reciver_entrypoint(const char* dir)
 
     CloseSocket(broadcast_reply_socket);
 
-    char ip_str[INET_ADDRSTRLEN];
-    IPtoString(remote_ip, ip_str, INET_ADDRSTRLEN);
+    char* ip_str = IPtoString(remote_ip);
 
     DEBUG_LOG("Got a broadcast from %s, calling back to %s\n", req.name, ip_str);
 

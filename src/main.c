@@ -94,7 +94,7 @@ void sender_entrypoint(const char* dir)
 
     struct psocket broadcast_socket = CreateSocket(STYPE_CLIENT, PROTO_UDP, NULL, NETWORK_PORT_BROADCAST);
     
-    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromConstants("ivan");
+    struct network_discovery_request req = CreateNetworkDiscoveryRequestFromUserAcc();
 
     // Do network broadcast, notifying recivers of our IP
     // after that, they should connect to us

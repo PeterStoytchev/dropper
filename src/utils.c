@@ -31,14 +31,14 @@ const char* ConcatenatePath(const char* dir, const char* file_name)
 char* GetFileNameWitoutPath(const char* src_str, u64 len)
 {
     u64 loc = 0;
-    for (u64 i = len - 1; i != 0; i--)
+    for (u64 i = len - 1; i < -1; i--)
     {
         if (src_str[i] == PATH_CHAR)
         {
-            if (i == 0)
+            if (i == (len - 1))
                 return NULL;
 
-            loc = i;
+            loc = i + 1;
             break;
         }
     }
